@@ -55,7 +55,14 @@ from ..engine.splash import (
 from ..engine.splash import (
     scan_ssd_cache as scan_splash_ssd_cache,
 )
-from ..exceptions import ModelBusyError
+from ..exceptions import (
+    InsufficientMemoryError,
+    ModelBusyError,
+    ModelLoadingError,
+    ModelNotFoundError,
+    ModelTooLargeError,
+    ModelUnavailableError,
+)
 from ..model_discovery import (
     REASONING_EFFORT_LEVELS,
     _is_hf_cache_mlx_compatible,
@@ -2709,7 +2716,16 @@ async def load_model(
 
     try:
         await engine_pool.get_engine(model_id)
+    except ModelNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except (ModelTooLargeError, InsufficientMemoryError) as e:
+        # Both mean "cannot fit": too large for the ceiling, or no room even
+        # after eviction. Same mapping as the inference path in server.py.
+        raise HTTPException(status_code=507, detail=str(e))
+    except (ModelUnavailableError, ModelLoadingError, ModelBusyError) as e:
+        raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
+        # Some load failures are not EnginePoolError; keep their reason.
         raise HTTPException(status_code=500, detail=str(e))
 
     logger.info(f"Manually loaded model: {model_id}")
