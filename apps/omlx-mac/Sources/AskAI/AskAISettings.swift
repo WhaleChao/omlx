@@ -186,6 +186,9 @@ struct AskAIPrefs: Codable, Equatable, Sendable {
     /// False in settings saved before prompts had a default; their empty
     /// prompts get the default once, and a prompt cleared later stays empty.
     var promptDefaultsApplied = true
+    /// Return sends and Shift-Return inserts the newline. Command-Return
+    /// sends either way.
+    var sendOnEnter = false
 
     init() {}
 
@@ -209,6 +212,7 @@ struct AskAIPrefs: Codable, Equatable, Sendable {
         gpuPowerLimitEnabled = c.lenient(Bool.self, .gpuPowerLimitEnabled) ?? fallback.gpuPowerLimitEnabled
         gpuPowerLimitWatts = c.lenient(Int.self, .gpuPowerLimitWatts) ?? fallback.gpuPowerLimitWatts
         talk = c.lenient(TalkPrefs.self, .talk) ?? fallback.talk
+        sendOnEnter = c.lenient(Bool.self, .sendOnEnter) ?? fallback.sendOnEnter
         promptDefaultsApplied = c.lenient(Bool.self, .promptDefaultsApplied) ?? false
         if !promptDefaultsApplied {
             if defaultSystemPrompt.isEmpty { defaultSystemPrompt = Self.defaultPrompt }

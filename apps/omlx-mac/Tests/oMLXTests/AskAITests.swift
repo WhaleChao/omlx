@@ -189,6 +189,7 @@ final class AskAITests: XCTestCase {
         XCTAssertEqual(prefs.presets.first?.command, "tldr")
         XCTAssertEqual(prefs.presets.first?.allowThinking, false)
         XCTAssertFalse(prefs.gpuPowerLimitEnabled)
+        XCTAssertFalse(prefs.sendOnEnter)
         XCTAssertNil(prefs.requestGPUPowerLimit)
         XCTAssertEqual(prefs.talk, TalkPrefs())
     }
@@ -206,6 +207,7 @@ final class AskAITests: XCTestCase {
     func testPrefsDecodeKeepsGoodFieldsWhenOthersAreMalformed() throws {
         let json = #"""
         {"enabled":true,"hotKey":{"keyCode":49},"panelPosition":"left","gpuPowerLimitWatts":"ten",
+         "sendOnEnter":true,
          "presets":[{"id":"not-a-uuid","command":"tldr","model":"qwen"},{"command":7},
                     {"command":"번역","model":"gemma"}],
          "talk":{"enabled":true,"hotKey":7,"model":"lfm3","voice":["ethan"],"speechSpeed":9}}
@@ -215,6 +217,7 @@ final class AskAITests: XCTestCase {
         XCTAssertEqual(prefs.hotKey, .optionSpace)
         XCTAssertNil(prefs.panelPosition)
         XCTAssertEqual(prefs.gpuPowerLimitWatts, 10)
+        XCTAssertTrue(prefs.sendOnEnter)
         XCTAssertEqual(prefs.presets.map(\.command), ["tldr", "", "번역"])
         XCTAssertTrue(prefs.talk.enabled)
         XCTAssertEqual(prefs.talk.hotKey, .optionShiftSpace)
